@@ -1,0 +1,97 @@
+#include "WiFi.h"
+#include "ThingSpeak.h"
+
+WiFiClient client;
+char ssid[]="vivo V21e 5G";
+char pwd[]="khaja12345";
+int motor1Pin1 = 27; 
+int motor1Pin2 = 26; 
+int enable1Pin = 14;
+int pushpin = 17;
+const int rain = 18;
+int rain_value;
+
+const int freq = 30000;
+const int pwmChannel = 0;
+const int resolution = 8;
+int dutyCycle = 200;
+
+void setup() 
+{
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(1000);  
+  Serial.println("Connecting to WiFi Network");
+  delay(1000);
+  WiFi.begin(ssid,pwd);
+
+  while(WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(300);
+  }
+  Serial.println();
+  Serial.println("WiFi Connected");
+  Serial.print("IP Address :");
+  Serial.println(WiFi.localIP());
+  delay(1000);
+  ThingSpeak.begin(client);
+  delay(1000);
+  ledcSetup(pwmChannel, freq, resolution);
+  ledcAttachPin(motor1Pin1, pwmChannel);
+  pinMode(motor1Pin1, OUTPUT);
+  pinMode(motor1Pin2, OUTPUT);
+  pinMode(enable1Pin, OUTPUT);
+  pinMode(pushpin, INPUT_PULLUP);
+  pinMode(rain,INPUT);
+  ledcSetup(pwmChannel, freq, resolution);
+  ledcAttachPin(motor1Pin1, pwmChannel);
+  Serial.print("Testing DC Motor...");
+}
+
+void loop()
+{
+  int lMode = ThingSpeak.readFloatField(1624095,1,"V8RMEUKGD98A33T0");
+if(digitalRead(17)==0)
+{
+  if(lMode==0)
+  {
+  digitalWrite(motor1Pin1,1);
+  digitalWrite(motor1Pin1,LOW);
+  ledcWrite(pwmChannel,200);
+  Serial.println("Child Mode Activated");
+  delay(1000);
+  }
+  else if(lMode==1)
+  {
+    if(digitalRead(rain)==0)
+    {
+    digitalWrite(motor1Pin1,1);
+    digitalWrite(motor1Pin1,LOW);
+    ledcWrite(pwmChannel,200);
+    Serial.println("Digital value : wet"); 
+    delay(10); 
+    rain_value=digitalRead(rain); 
+    Serial.print("Digital value : ");
+    Serial.println(rain_value); 
+    Serial.println("");
+    delay(10);
+    }
+    else
+    {
+    digitalWrite(motor1Pin1,1);
+    digitalWrite(motor1Pin2, LOW);
+    ledcWrite(pwmChannel,255);
+    Serial.println("Normal Mode.");
+    delay(1000);
+    }
+  }
+}
+else
+{
+  digitalWrite(motor1Pin1,0);
+  digitalWrite(motor1Pin2,0);
+  ledcWrite(pwmChannel,0);
+}
+}
