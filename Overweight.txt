@@ -1,0 +1,80 @@
+
+#include "ESP8266WiFi.h"
+  
+ const char* SSID = "Hari Prasanth";
+ const char* PWD = "Hari4444";
+  
+ void setup()
+ {
+   Serial.begin(9600);
+   WiFi.mode(WIFI_STA); //wifi should be in station mode to connect to the network
+   WiFi.disconnect();
+   Serial.println("Connecting to :");
+   Serial.println(SSID);;
+   WiFi.begin(SSID,PWD);
+   while(WiFi.status()!=WL_CONNECTED)
+   {
+     Serial.println(".");
+     delay()
+   }
+   Serial.println("WiFi connected.");
+ }
+ 
+TOTAL CODE TO UPLOAD INTO THE CLOUD….
+#include "ESP8266WiFi.h" // connecting to wifi
+ #include "DHT.h" //readib the sensor data
+ #include "ThingSpeak.h" //connecting to the thing speak
+  
+ WiFiClient client; //used to call the server
+  
+ DHT dht(D2,DHT11);
+  
+ const char* SSID = "Hari Prasanth";
+ const char* PWD = "Hari4444";
+  
+#define fsrpin A0
+int fsrreading;
+void setup() {
+ 
+  Serial.begin(9600);
+  dht.begin();
+  WiFi.mode(WIFI_STA); //wifi should be in station mode to connect to the network
+   WiFi.disconnect();
+   Serial.println("Connecting to :");
+   Serial.println(SSID);;
+   WiFi.begin(SSID,PWD);
+   while(WiFi.status()!=WL_CONNECTED) //checks wheather the wifi is connected of not.
+   {
+     Serial.println(".");
+     delay()
+   }
+   Serial.println("WiFi connected.");
+   ThingSpeak.begin(client); //it begins the client to the thingspeak
+  
+  
+}
+void loop() {
+  int r1=0;
+  int r2=1;
+  fsrreading = analogRead(fsrpin);
+  if(isnan(fsrreading))
+{
+	return;
+}
+  
+  if (fsrreading > 200 && fsrreading < 800) {
+    Serial.println("Low");
+    ThingSpeak.setField(1,r1);
+  }
+   else if(fsrreading > 800){
+      Serial.println("High");
+      ThingSpeak.setField(1,r2);
+    }
+  int s = ThingSpeak.writeFields(1624100,"TMW5VG37MRTN67X3");
+  if(s == 200)
+      Serial.println("Data uploaded.");
+    else
+      Serial.println("Not Sent.")
+    delay(20000);//minimum 2 seconds should be given to upload the data into the cloud....
+}
+ 

@@ -1,0 +1,63 @@
+int motor1Pin1 = 27; 
+int motor1Pin2 = 26; 
+int enable1Pin = 14; 
+int pushpin = 17;
+const int rain = 18;
+int rain_value;
+
+// Setting PWM properties
+const int freq = 30000;
+const int pwmChannel = 0;
+const int resolution = 8;
+int dutyCycle = 200;
+
+void setup() {
+  // sets the pins as outputs:
+  pinMode(motor1Pin1, OUTPUT);
+  pinMode(motor1Pin2, OUTPUT);
+  pinMode(enable1Pin, OUTPUT);
+  pinMode(pushpin, INPUT_PULLUP);
+  pinMode(rain,INPUT);
+
+  //analogWriteResolution(motor1Pin1, 12);
+  // configure LED PWM functionalitites
+  ledcSetup(pwmChannel, freq, resolution);
+  
+  // attach the channel to the GPIO to be controlled
+  ledcAttachPin(motor1Pin1, pwmChannel);
+
+  Serial.begin(115200);
+
+  // testing
+  Serial.print("Testing DC Motor...");
+}
+
+void loop() {
+  // Move DC motor forward with increasing speed
+  if(digitalRead(17)==0)
+  {
+    
+  digitalWrite(motor1Pin1,1);
+  digitalWrite(motor1Pin2, LOW);
+  ledcWrite(pwmChannel,255);
+    if(digitalRead(rain)==0)
+    {
+    digitalWrite(motor1Pin1,1);
+    digitalWrite(motor1Pin1,LOW);
+    ledcWrite(pwmChannel,200);
+    Serial.println("Digital value : wet"); 
+    delay(10); 
+    rain_value=digitalRead(rain); 
+    Serial.print("Digital value : ");
+    Serial.println(rain_value); 
+    Serial.println("");
+    delay(10);
+    }
+  }
+  else
+  {
+    digitalWrite(motor1Pin1,0);
+    digitalWrite(motor1Pin2,0);
+    ledcWrite(pwmChannel,0);
+  }
+ }
